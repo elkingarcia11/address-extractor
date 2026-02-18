@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Text Extractor</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 14px;
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 14px;
+      color: #1a1a1a;
+      background: #f8f9fa;
+    }
+    h1 { margin: 0 0 8px; font-size: 17px; font-weight: 600; }
+    .hint {
+      margin: 0 0 12px;
+      color: #555;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+    .btn-row { display: flex; gap: 8px; margin-bottom: 12px; }
+    .btn-row button { flex: 1; padding: 10px 16px; font-size: 14px; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; }
+    #startExtraction { color: #fff; background: #2563eb; }
+    #startExtraction:hover { background: #1d4ed8; }
+    #stopExtraction { color: #fff; background: #dc2626; }
+    #stopExtraction:hover { background: #b91c1c; }
+    #stopExtraction:disabled { background: #9ca3af; cursor: not-allowed; }
+    label { font-weight: 500; color: #333; display: block; margin-bottom: 4px; }
+    #output {
+      width: 100%;
+      min-height: 280px;
+      padding: 10px 12px;
+      font-family: ui-monospace, monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      resize: vertical;
+      background: #fff;
+    }
+    .status { margin-top: 8px; font-size: 12px; color: #666; }
+    .debug-section { margin-top: 12px; border: 1px solid #d1d5db; border-radius: 6px; background: #f3f4f6; }
+    .debug-section summary { padding: 8px 10px; font-size: 12px; font-weight: 600; cursor: pointer; }
+    #debugLog { padding: 8px 10px; font-family: ui-monospace, monospace; font-size: 11px; line-height: 1.5; max-height: 160px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; color: #374151; }
+    #debugLog:empty::before { content: 'No debug messages yet. Start extraction and click on the page.'; color: #9ca3af; }
+    #clearDebug { margin-top: 4px; font-size: 11px; padding: 4px 8px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Text Extractor</h1>
+    <p class="hint">Click <strong>Start extraction</strong>, then click any element on the page (or move focus with arrow keys and capture). Each capture is added on a new line. Click <strong>Stop extraction</strong> when done.</p>
+    <div class="btn-row">
+      <button id="startExtraction" type="button">Start extraction</button>
+      <button id="stopExtraction" type="button" disabled>Stop extraction</button>
+    </div>
+    <label for="output">Extracted text (one per line):</label>
+    <textarea id="output" placeholder="Start extracting, then click elements on the page…"></textarea>
+    <p id="status" class="status" aria-live="polite"></p>
+    <details class="debug-section">
+      <summary>Debug log</summary>
+      <div id="debugLog"></div>
+      <button type="button" id="clearDebug">Clear log</button>
+    </details>
+  </div>
+  <script src="sidepanel.js"></script>
+</body>
+</html>

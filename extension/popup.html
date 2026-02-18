@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dirección Extractor</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Dirección Extractor</h1>
+    <p class="hint">Open a page with a grid that has a "Dirección" column, then click Extract.</p>
+    <button id="extract" type="button">Extract</button>
+    <div class="result-area">
+      <label for="output">Extracted addresses (one per line):</label>
+      <textarea id="output" rows="12" readonly placeholder="Click Extract to get Dirección column values…"></textarea>
+      <p id="status" class="status" aria-live="polite"></p>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
