@@ -1,27 +1,77 @@
 (function () {
+  var headerLogo = document.getElementById('headerLogo');
+  if (headerLogo && typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getURL) {
+    headerLogo.src = chrome.runtime.getURL('icons/text-extractor-logo.svg');
+  }
   var startBtn = document.getElementById('startExtraction');
   var stopBtn = document.getElementById('stopExtraction');
   var output = document.getElementById('output');
   var statusEl = document.getElementById('status');
-  var debugLogEl = document.getElementById('debugLog');
   var isActive = false;
 
   function setStatus(msg) {
     statusEl.textContent = msg;
   }
 
-  function debug(msg, data) {
-    var line = new Date().toLocaleTimeString() + ' ' + msg + (data ? ' ' + JSON.stringify(data) : '');
-    if (debugLogEl) {
-      debugLogEl.appendChild(document.createTextNode(line + '\n'));
-      debugLogEl.scrollTop = debugLogEl.scrollHeight;
-    }
-    console.log('[Text Extractor]', msg, data || '');
+  function getLines() {
+    var v = output.value ? output.value.trim() : '';
+    return v ? v.split(/\r?\n/).map(function (s) { return s.trim(); }).filter(Boolean) : [];
   }
 
-  document.getElementById('clearDebug').addEventListener('click', function () {
-    if (debugLogEl) debugLogEl.textContent = '';
-  });
+  function defaultFilename(ext) {
+    var d = new Date();
+    var y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, '0'), day = String(d.getDate()).padStart(2, '0');
+    return 'text-extractor-' + y + '-' + m + '-' + day + '.' + ext;
+  }
+
+  function downloadBlob(blob, filename) {
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  function exportTxt() {
+    var lines = getLines();
+    var text = lines.join('\n');
+    var blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    downloadBlob(blob, defaultFilename('txt'));
+    setStatus('Exported as TXT.');
+  }
+
+  function exportCsv() {
+    var lines = getLines();
+    function escapeCsv(s) {
+      if (/[",\r\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+      return s;
+    }
+    var csv = '\uFEFFText\n' + lines.map(escapeCsv).join('\n');
+    var blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    downloadBlob(blob, defaultFilename('csv'));
+    setStatus('Exported as CSV.');
+  }
+
+  function exportXlsx() {
+    var lines = getLines();
+    if (lines.length === 0) {
+      setStatus('No data to export.');
+      return;
+    }
+    var html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"></head><body><table><thead><tr><th>Text</th></tr></thead><tbody>';
+    for (var i = 0; i < lines.length; i++) {
+      var cell = String(lines[i]).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      html += '<tr><td>' + cell + '</td></tr>';
+    }
+    html += '</tbody></table></body></html>';
+    var blob = new Blob(['\uFEFF' + html], { type: 'application/vnd.ms-excel;charset=utf-8' });
+    downloadBlob(blob, defaultFilename('xls'));
+    setStatus('Exported as XLS (Excel-compatible).');
+  }
+
+  document.getElementById('exportTxt').addEventListener('click', exportTxt);
+  document.getElementById('exportCsv').addEventListener('click', exportCsv);
+  document.getElementById('exportXlsx').addEventListener('click', exportXlsx);
 
   function setExtracting(active) {
     isActive = active;
@@ -31,12 +81,7 @@
   }
 
   chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
-    if (msg.type === 'debug') {
-      debug(msg.message || 'debug', msg.data);
-      return;
-    }
     if (msg.type === 'extracted' && typeof msg.text === 'string') {
-      debug('Received extracted text', { length: msg.text.length, preview: msg.text.slice(0, 40) + (msg.text.length > 40 ? '…' : '') });
       var line = msg.text.trim().replace(/\s+/g, ' ');
       if (output.value) output.value += '\n' + line;
       else output.value = line;
@@ -46,24 +91,31 @@
 
   startBtn.addEventListener('click', function () {
     if (isActive) return;
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-      if (!tabs[0]) {
-        setStatus('No tab selected.');
-        debug('Start failed: no tab');
+    chrome.tabs.query({ currentWindow: true }, function (tabs) {
+      if (!tabs.length) {
+        setStatus('No tabs in this window.');
         return;
       }
-      var tabId = tabs[0].id;
-      debug('Injecting click listener', { tabId: tabId, url: tabs[0].url, allFrames: true });
-      chrome.scripting.executeScript({
-        target: { tabId: tabId, allFrames: true },
-        func: startClickExtract,
-      }).then(function (results) {
-        debug('Injection result', { frameCount: results ? results.length : 0, results: results });
-        setExtracting(true);
-      }).catch(function (err) {
-        var errMsg = err && err.message ? err.message : 'Could not start on this page.';
-        setStatus(errMsg);
-        debug('Injection error', { error: errMsg });
+      var done = 0;
+      var errors = 0;
+      tabs.forEach(function (tab) {
+        chrome.scripting.executeScript({
+          target: { tabId: tab.id, allFrames: true },
+          func: startClickExtract,
+        }).then(function (results) {
+          done++;
+          if (done === tabs.length) {
+            setExtracting(true);
+            setStatus('Capturing in all tabs. Click any element in any tab.');
+          }
+        }).catch(function () {
+          done++;
+          errors++;
+          if (done === tabs.length) {
+            setExtracting(true);
+            setStatus('Capturing in ' + (tabs.length - errors) + ' tab(s). Click any element.');
+          }
+        });
       });
     });
   });
@@ -71,30 +123,19 @@
   stopBtn.addEventListener('click', function () {
     if (!isActive) return;
     setExtracting(false);
-    debug('Stop extraction – removing listeners from all frames');
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-      if (tabs[0]) {
+    chrome.tabs.query({ currentWindow: true }, function (tabs) {
+      tabs.forEach(function (tab) {
         chrome.scripting.executeScript({
-          target: { tabId: tabs[0].id, allFrames: true },
+          target: { tabId: tab.id, allFrames: true },
           func: stopClickExtract,
         }).catch(function () {});
-      }
+      });
     });
   });
 })();
 
 function startClickExtract() {
-  function sendDebug(msg, data) {
-    try {
-      if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
-        chrome.runtime.sendMessage({ type: 'debug', message: msg, data: data });
-      }
-    } catch (e) {}
-  }
-  if (window.__textExtractClick) {
-    sendDebug('Listener already attached (this frame)', { href: window.location.href });
-    return;
-  }
+  if (window.__textExtractClick) return;
   function getText(el) {
     if (!el) return '';
     var t = el.innerText || el.textContent || '';
@@ -103,14 +144,10 @@ function startClickExtract() {
   function onClick(e) {
     try {
       var text = getText(e.target);
-      var tag = e.target ? e.target.tagName : '';
-      sendDebug('Click', { tag: tag, textLength: text ? text.length : 0, preview: text ? text.slice(0, 30) + (text.length > 30 ? '…' : '') : '' });
       if (text && typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
         chrome.runtime.sendMessage({ type: 'extracted', text: text });
       }
-    } catch (err) {
-      sendDebug('Click error', { error: String(err.message || err) });
-    }
+    } catch (err) {}
   }
   function captureFocused() {
     var el = document.activeElement;
@@ -118,7 +155,6 @@ function startClickExtract() {
     var t = el.innerText || el.textContent || '';
     var text = t.trim().replace(/\s+/g, ' ');
     if (!text) return;
-    sendDebug('Arrow/focus', { tag: el.tagName, textLength: text.length, preview: text.slice(0, 30) + (text.length > 30 ? '…' : '') });
     try {
       if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
         chrome.runtime.sendMessage({ type: 'extracted', text: text });
@@ -135,7 +171,6 @@ function startClickExtract() {
   document.addEventListener('keydown', onKeydown, true);
   window.__textExtractClick = onClick;
   window.__textExtractKeydown = onKeydown;
-  sendDebug('Click listener attached', { href: window.location.href, frame: window.parent !== window });
 }
 
 function stopClickExtract() {

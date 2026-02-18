@@ -3,13 +3,24 @@
   "name": "Text Extractor",
   "version": "1.0.0",
   "description": "Click or move with arrow keys to extract text from any element on the page.",
-  "permissions": ["activeTab", "scripting", "sidePanel"],
-  "host_permissions": ["<all_urls>"],
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "sidePanel"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
   "background": {
     "service_worker": "background.js"
   },
   "action": {
-    "default_title": "Text Extractor"
+    "default_title": "Text Extractor",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
   },
   "side_panel": {
     "default_path": "sidepanel.html"
