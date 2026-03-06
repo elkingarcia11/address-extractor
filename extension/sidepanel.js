@@ -1,7 +1,7 @@
 (function () {
   var headerLogo = document.getElementById('headerLogo');
   if (headerLogo && typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getURL) {
-    headerLogo.src = chrome.runtime.getURL('icons/text-extractor-logo.svg');
+    headerLogo.src = chrome.runtime.getURL('icons/logo.png');
   }
   var startBtn = document.getElementById('startExtraction');
   var stopBtn = document.getElementById('stopExtraction');
@@ -91,8 +91,11 @@
 
   startBtn.addEventListener('click', function () {
     if (isActive) return;
+    setExtracting(true);
+    setStatus('Starting extraction…');
     chrome.tabs.query({ currentWindow: true }, function (tabs) {
       if (!tabs.length) {
+        setExtracting(false);
         setStatus('No tabs in this window.');
         return;
       }
@@ -105,15 +108,25 @@
         }).then(function (results) {
           done++;
           if (done === tabs.length) {
-            setExtracting(true);
-            setStatus('Capturing in all tabs. Click any element in any tab.');
+            var successes = tabs.length - errors;
+            if (successes > 0) {
+              setStatus('Capturing in ' + successes + ' tab(s). Click any element.');
+            } else {
+              setExtracting(false);
+              setStatus('Could not start extraction on any tab.');
+            }
           }
         }).catch(function () {
           done++;
           errors++;
           if (done === tabs.length) {
-            setExtracting(true);
-            setStatus('Capturing in ' + (tabs.length - errors) + ' tab(s). Click any element.');
+            var successes = tabs.length - errors;
+            if (successes > 0) {
+              setStatus('Capturing in ' + successes + ' tab(s). Click any element.');
+            } else {
+              setExtracting(false);
+              setStatus('Could not start extraction on any tab.');
+            }
           }
         });
       });
@@ -143,6 +156,17 @@ function startClickExtract() {
   }
   function onClick(e) {
     try {
+      // If user clicks a link/button while extracting, don't trigger the page action.
+      var actionable = null;
+      if (e && e.target && e.target.closest) {
+        actionable = e.target.closest('a, button, input[type="button"], input[type="submit"], [role="button"]');
+      }
+      if (actionable) {
+        if (e.preventDefault) e.preventDefault();
+        if (e.stopPropagation) e.stopPropagation();
+        if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+      }
+
       var text = getText(e.target);
       if (text && typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
         chrome.runtime.sendMessage({ type: 'extracted', text: text });
