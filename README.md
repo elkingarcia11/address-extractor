@@ -1,6 +1,6 @@
-# Text Extractor
+# Text Extractor Extension
 
-A Chrome extension that extracts text from any element on the page: **click** the element or **move focus** with arrow keys / Tab. Each capture is added as a new line. There’s **no limit**,capture as many elements as you like, and you can switch **tabs** in the same window; all captures go into one list.
+**Click it. Capture it. Export it.** A Chrome extension that extracts text from any element on the page: click the element or move focus with **Arrow keys** / **Tab**. Each capture is added as a new line. No limit—capture as many as you like, across **any tab** in the same window; all go into one list. Export to TXT, CSV, or Excel with one click.
 
 ## Setup
 
@@ -11,12 +11,13 @@ A Chrome extension that extracts text from any element on the page: **click** th
 ## Usage
 
 1. Click the extension icon. The **side panel** opens.
-2. Click **Start extraction**. The listener is injected into **all tabs** in the current window.
+2. Click **Start extraction**. The listener is injected into **all tabs** in the current window. The Start button is disabled and **Stop extraction** is enabled.
 3. In any of those tabs:
-  - **Click** any element to capture its text, or
-  - Use **Arrow keys** or **Tab** to move focus; the focused element’s text is captured on each move.
+   - **Click** any element to capture its text, or
+   - Use **Arrow keys** or **Tab** to move focus; the focused element’s text is captured on each move.
+   - Clicks on **links and buttons** only capture text—they do not navigate or submit.
 4. Each capture is added on a new line in the text area. No limit on how many you capture.
-5. Click **Stop extraction** when done (listeners are removed from all tabs).
+5. Click **Stop extraction** when done. Listeners are removed from all tabs; Stop is disabled and Start is enabled again.
 
 ## Export
 
@@ -27,40 +28,3 @@ Below the text area you can export the list to:
 - **Export XLSX** — Excel-compatible file (`.xls`) that opens in Excel.
 
 Files are named like `text-extractor-YYYY-MM-DD` with the right extension.
-
-## SEO description (Chrome Web Store)
-
-**Text Extractor** is a fast, lightweight Chrome extension that lets you extract text from any website in seconds. Click **Start extraction**, then click any element (or use arrow keys / Tab to move focus) to capture text instantly, each capture is added as a new line in one running list. Perfect for quickly collecting addresses, phone numbers, emails, names, product info, quotes, and notes from multiple pages without repetitive copy/paste.
-
-Capture text across multiple tabs in the same window, then export your results with one click to TXT, CSV, or Excel-compatible XLS for easy use in Excel, Google Sheets, Airtable, CRMs, reports, research, and data entry workflows. While extracting, clicks on links and buttons won’t navigate or trigger actions, so you can safely capture content without leaving the page.
-
-**Key features**
-
-- Click-to-capture text from any page element
-- Keyboard capture via Arrow keys / Tab (focus-based extraction)
-- Works across tabs in the current window
-- Unlimited captures (one line per capture)
-- Export: TXT / CSV / Excel-compatible XLS
-- Safe capture while extracting (prevents link/button actions)
-
-**Text Extractor** is a fast, lightweight Chrome extension that lets you extract text from any website in seconds. Click **Start extraction**, then click any element (or use arrow keys / Tab to move focus) to capture text instantly, each capture is added as a new line in one running list. Perfect for quickly collecting addresses, phone numbers, emails, names, product info, quotes, and notes from multiple pages without repetitive copy/paste.
-
-Capture text across multiple tabs in the same window, then export your results with one click to TXT, CSV, or Excel-compatible XLS for easy use in Excel, Google Sheets, Airtable, CRMs, reports, research, and data entry workflows. While extracting, clicks on links and buttons won’t navigate or trigger actions, so you can safely capture content without leaving the page.
-
-**Key features**
-
-- Click-to-capture text from any page element
-- Keyboard capture via Arrow keys / Tab (focus-based extraction)
-- Works across tabs in the current window
-- Unlimited captures (one line per capture)
-- Export: TXT / CSV / Excel-compatible XLS
-- Safe capture while extracting (prevents link/button actions)**Text Extractor** is a fast, lightweight Chrome extension that lets you extract text from any website in seconds. Click **Start extraction**, then click any element (or use arrow keys / Tab to move focus) to capture text instantly, each capture is added as a new line in one running list. Perfect for quickly collecting addresses, phone numbers, emails, names, product info, quotes, and notes from multiple pages without repetitive copy/paste.
-  Capture text across multiple tabs in the same window, then export your results with one click to TXT, CSV, or Excel-compatible XLS for easy use in Excel, Google Sheets, Airtable, CRMs, reports, research, and data entry workflows. While extracting, clicks on links and buttons won’t navigate or trigger actions, so you can safely capture content without leaving the page.
-  **Key features**
-  - Click-to-capture text from any page element
-  - Keyboard capture via Arrow keys / Tab (focus-based extraction)
-  - Works across tabs in the current window
-  - Unlimited captures (one line per capture)
-  - Export: TXT / CSV / Excel-compatible XLS
-  - Safe capture while extracting (prevents link/button actions)
-

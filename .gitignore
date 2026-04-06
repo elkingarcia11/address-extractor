@@ -29,3 +29,8 @@ npm-debug.log*
 # Optional: uncomment to ignore local logo drafts
 # logo-draft*
 # *.psd
+
+SEO.md
+PRIVACY_JUSTIFICATIONS.md
+privacy-policy.html
+Screenshot.png
